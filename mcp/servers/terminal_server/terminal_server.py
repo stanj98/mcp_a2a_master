@@ -3,7 +3,7 @@ import os
 import subprocess
 
 mcp = FastMCP("terminal_server")
-DEFAULT_WORKSPACE = os.path.expanduser("~/Documents/mcp_a2a_master/mcp/workspace")
+DEFAULT_WORKSPACE = os.path.expanduser("~/mcp_a2a_master/mcp/workspace")
 
 @mcp.tool("terminal_server")
 async def run_command(command: str) -> str:
@@ -21,3 +21,5 @@ async def run_command(command: str) -> str:
         return f"Error running command: {str(e)}"
         
     
+if __name__ == "__main__":
+    mcp.run(transport = "stdio")
