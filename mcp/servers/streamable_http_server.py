@@ -30,3 +30,7 @@ async def add_numbers(input: ArithmeticInput) -> ArithmeticOutput:
     result = input.a + input.b
     expression = f"{input.a} + {input.b} = {result}"
     return ArithmeticOutput(result=result, expression=expression) 
+
+
+if __name__ == "__main__":
+    mcp.run(transport = "streamable-http")
