@@ -1,0 +1,10 @@
+{
+    "mcpServers": {
+        "terminal_server": {
+            "command": "streamable_http",
+            "args": [
+                "https://localhost:3000/mcp/"
+            ]
+        }
+    }
+}
