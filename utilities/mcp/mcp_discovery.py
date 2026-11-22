@@ -44,3 +44,19 @@ class MCPDiscovery:
     
         except Exception as e:
             raise RuntimeError(f"Error reading configuration file {self.config_file}: {e}")
+    
+    def list_servers(self) -> Dict[str, Any]:
+        """
+        
+        Returns the MCP servers defined in the configuration file.
+        
+        Returns:
+            Dict[str, Any]: The content of the "mcpServers" key from the config.
+            
+        Raises:
+            KeyError: If "mcpServers" key is not found in the configuration.
+        """
+        if "mcpServers" not in self.config:
+            raise KeyError(f"'mcpServers' key is not found in {self.config_file}")
+        
+        return self.config.get("mcpServers", {})
