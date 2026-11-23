@@ -23,6 +23,7 @@ class MCPConnector:
         """
         Loads all tools from discovered MCP servers and caches them as MCPToolSets.
         """
+        tools = []
         try:
             for name, server in self.discovery.list_servers():
                 if server.get("command") == "streamable_http":
@@ -49,5 +50,10 @@ class MCPConnector:
         return tools
             
         
-    
+    def get_tools(self) -> list[MCPToolset]:
+        """
+        Returns the cached list of MCPToolsets
+        """
+        return self.tools.copy()
+        
     
