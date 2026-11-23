@@ -23,17 +23,30 @@ class MCPConnector:
         """
         Loads all tools from discovered MCP servers and caches them as MCPToolSets.
         """
-        for name, server in self.discovery.list_servers():
-            if server.get("command") == "streamable_http":
-                conn = StreamableHTTPServerParams(url=server["args"][0])
-            else:
-                conn = StdioConnectionParams(
-                    server_params=StdioServerParameters(
-                        command = server["command"],
-                        args = server["args"]
-                    ),
-                    timeout=5
+        try:
+            for name, server in self.discovery.list_servers():
+                if server.get("command") == "streamable_http":
+                    conn = StreamableHTTPServerParams(url=server["args"][0])
+                else:
+                    conn = StdioConnectionParams(
+                        server_params=StdioServerParameters(
+                            command = server["command"],
+                            args = server["args"]
+                        ),
+                        timeout=5
+                    )
+                toolset = MCPToolset(
+                    connection_params=conn
                 )
+                tools = await toolset.get_tools()
+                tool_names = [tool.name for tool in tools]
+                print(f"[bold green] Loaded tools from server [cyan]'{name}'[/cyan]: [/bold green] {', '.join(tool_names)}")
+                
+                tools.append(toolset)
+        except Exception as e:
+            print(f"[bold red] Error loading tools from server (skipping) '{name}': {e}[/bold red] ")
+        
+        return tools
             
         
     
