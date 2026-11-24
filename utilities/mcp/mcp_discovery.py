@@ -60,3 +60,4 @@ class MCPDiscovery:
             raise KeyError(f"'mcpServers' key is not found in {self.config_file}")
         
         return self.config.get("mcpServers", {})
+    
