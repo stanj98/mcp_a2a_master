@@ -1,6 +1,9 @@
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from agents.website_builder_simple.agent import WebsiteBuilderSimple
+from a2a.utils import (
+    new_task,
+)
 
 class WebsiteBuilderSimpleAgentExecutor(AgentExecutor):
     """ 
@@ -12,5 +15,8 @@ class WebsiteBuilderSimpleAgentExecutor(AgentExecutor):
         self.agent = WebsiteBuilderSimple()
         
     async def execute(self, context: RequestContext, event_queue: EventQueue):
-        llm_agent = self.agent._build_agent()
-        return await llm_agent.execute(context, event_queue)
+        query = context.get_user_input()
+        task = context.current_task
+        if not task:
+            task = new_task(context.message)
+        
