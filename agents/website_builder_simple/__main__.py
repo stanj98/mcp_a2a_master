@@ -1,6 +1,9 @@
 from a2a.types import AgentSkill, AgentCard, AgentCapabilities
+import click
 
-
+@click.command
+@click.option('--host', default='localhost', help='Host for the agent server')
+@click.option('--port', default=10000, help='Port for the agent server')
 def main(host:str, port:int):
 
     """ 
