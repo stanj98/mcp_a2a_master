@@ -1,9 +1,12 @@
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
+from a2a.server.tasks import TaskUpdater
 from agents.website_builder_simple.agent import WebsiteBuilderSimple
 from a2a.utils import (
     new_task,
+    new_agent_text_message,
 )
+from a2a.types import TaskState
 
 class WebsiteBuilderSimpleAgentExecutor(AgentExecutor):
     """ 
@@ -19,4 +22,31 @@ class WebsiteBuilderSimpleAgentExecutor(AgentExecutor):
         task = context.current_task
         if not task:
             task = new_task(context.message)
+            await event_queue.enqueue_event(task)
+            
+        updater = TaskUpdater(event_queue, task.id)
+        try:
+            async for item in self.agent.invoke(task.context_id):
+                is_task_complete = item.get("is_task_complete", False)
+                if not is_task_complete:
+                    message = item.get("updates", "The Agent is still working on your request")
+                    await updater.update_status(TaskState.working,
+                    new_agent_text_message(message,task.context_id, task.id))
+                else:
+                    final_result = item.get("content", "no result received")
+                    await updater.update_status(TaskState.completed,
+                    new_agent_text_message(final_result,task.context_id, task.id))
+                    await asyncio.sleep(0.1)
+                    break
+        except Exception as e:
+            error_message = f"An error occurred: {str(e)}"
+            await updater.update_status(
+                TaskState.failed,
+                new_agent_text_message(error_message, task.context_id, task.id)
+            )
+            raise
+        
+    async def cancel(self, context, event_queue):
+        return await super().cancel(context, event_queue)
+        
         
