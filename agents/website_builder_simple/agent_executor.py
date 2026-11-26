@@ -6,7 +6,8 @@ from a2a.utils import (
     new_task,
     new_agent_text_message,
 )
-from a2a.types import TaskState
+from a2a.utils.errors import ServerError
+from a2a.types import (Task, TaskState, UnsupportedOperationError)
 
 class WebsiteBuilderSimpleAgentExecutor(AgentExecutor):
     """ 
@@ -24,7 +25,7 @@ class WebsiteBuilderSimpleAgentExecutor(AgentExecutor):
             task = new_task(context.message)
             await event_queue.enqueue_event(task)
             
-        updater = TaskUpdater(event_queue, task.id)
+        updater = TaskUpdater(event_queue, task.id, task.context_id)
         try:
             async for item in self.agent.invoke(task.context_id):
                 is_task_complete = item.get("is_task_complete", False)
@@ -46,7 +47,7 @@ class WebsiteBuilderSimpleAgentExecutor(AgentExecutor):
             )
             raise
         
-    async def cancel(self, context, event_queue):
-        return await super().cancel(context, event_queue)
+    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> Task | None:
+        raise ServerError(error = UnsupportedOperationError())
         
         
