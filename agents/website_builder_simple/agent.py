@@ -1,5 +1,10 @@
 from utilities.common.file_loader import load_instructions_file
+from collections.abc import AsynIterable
 from google.adk.agents import LlmAgent
+from google.adk import Runner
+from googe.adk.artifacts import InMemoryArtifactService
+from google.adk.sessions import InMemorySessionService
+from google.adk.in_memory_memory_service import InMemoryMemoryService
 
 class website_builder_simple:
     """
@@ -10,6 +15,16 @@ class website_builder_simple:
     def __init__(self):
         self.system_instruction = load_instructions_file("agents/website_builder_simple/instructions.txt")
         self.description = load_instructions_file("agents/website_builder_simple/description.txt")
+        self._agent = self._build_agent()
+        self._user_id = "website_builder_simple_agent_user"
+        self._runner = Runner(
+            app_name = self._agent_name,
+            agent = self._agent,
+            artifact_service = InMemoryArtifactService(),
+            session_service = InMemorySessionService(),
+            memory_service = InMemoryMemoryService()
+        )
+
     
     def _build_agent(self) -> LlmAgent:
         return LlmAgent(
@@ -19,3 +34,16 @@ class website_builder_simple:
             description=self.description,
         )
     
+    async def invoke(self, query: str, session_id: str) -> AsynIterable[dict]:
+        """
+        Invoke the agent
+        Return the stream of updates back to the caller as the agent processes the query
+
+        {
+            'is_task_complete': bool, #indicates if the task is complete
+            updates: str, #updates on the task progress
+            content: str, $Final result of the task is complete
+        }
+        """
+
+
