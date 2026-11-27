@@ -5,6 +5,7 @@ from google.adk import Runner
 from googe.adk.artifacts import InMemoryArtifactService
 from google.adk.sessions import InMemorySessionService
 from google.adk.in_memory_memory_service import InMemoryMemoryService
+from google.genai import types
 
 class website_builder_simple:
     """
@@ -45,5 +46,41 @@ class website_builder_simple:
             content: str, $Final result of the task is complete
         }
         """
+        session = await self._runner.session_service.get_session(
+            app_name = self._agent_name,
+            session_id= session_id,
+            user_id = self._user_id
+        )
 
+        if not session:
+            session = await self._runner.session_service.create_session(
+                app_name = self._agent_name,
+                session_id= session_id,
+                user_id = self._user_id
+            )
 
+        user_content = types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=query)]
+        )
+
+        async for event in self._runner.run_async(
+            user_id = self._user_id,
+            session_id= session_id,
+            new_message = user_content
+        ):
+            if event.is_final_response:
+                final_response = ""
+                if event.content and event.content.parts and event.content.parts[-1].text:
+                    final_response = event.content.parts[-1].text
+            
+                yield {
+                    'is_task_complete': True,
+                    'updates': "Task completed succesfully",
+                    "content": final_response
+                }
+            else:
+                yield {
+                    'is_task_complete': False,
+                    'updates': "Agent is processing your request"
+                }
